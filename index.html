@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MIZZLE</title>
+<style>
+  :root { --ink: #2a2f55; --heart: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 21C3 14 2 9 4.5 6 7 3 10.5 4 12 7c1.5-3 5-4 7.5-1S21 14 12 21z'/%3E%3C/svg%3E"); }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0d24; color: #fff; user-select: none; -webkit-user-select: none;
+    font-family: ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "Nunito", system-ui, sans-serif; }
+  #c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .hide { opacity: 0 !important; pointer-events: none; }
+
+  #title { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; padding-top: 7vh; transition: opacity 1.4s; cursor: pointer; }
+  #title h1 { margin: 0; display: flex; font-weight: 900; font-size: clamp(64px, 14vw, 210px); letter-spacing: .03em; line-height: 1; }
+  #title h1 span { display: inline-block; color: #fff; text-shadow: 0 .035em 0 #cfdcff, 0 .07em 0 #a9bcf5, 0 .14em .22em rgba(16, 24, 80, .5);
+    animation: bob 2.8s ease-in-out infinite; animation-delay: calc(var(--i) * -.24s); }
+  @keyframes bob { 0%, 100% { transform: translateY(0) rotate(-2.5deg); } 50% { transform: translateY(-.085em) rotate(2.5deg); } }
+  #title p { position: absolute; bottom: 7vh; margin: 0; font-size: 15px; font-weight: 700; letter-spacing: .34em; text-shadow: 0 2px 10px rgba(10, 16, 60, .7); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
+
+  #hud { position: fixed; left: 18px; top: 18px; display: flex; gap: 10px; align-items: center; transition: opacity .8s; }
+  .pill { display: flex; align-items: center; gap: 7px; height: 40px; padding: 0 14px; border-radius: 999px; background: rgba(255, 255, 255, .88); color: var(--ink);
+    box-shadow: 0 6px 20px rgba(16, 24, 80, .22); font-weight: 800; font-size: 15px; font-variant-numeric: tabular-nums; }
+  #hearts { gap: 4px; }
+  #hearts i { width: 17px; height: 17px; background: #d5d9ea; -webkit-mask: var(--heart) center / contain no-repeat; mask: var(--heart) center / contain no-repeat; transition: background .3s; }
+  #hearts i.on { background: #ff5d8a; animation: beat .6s cubic-bezier(.3, 2.2, .5, 1); }
+  @keyframes beat { 0% { transform: scale(.2); } 100% { transform: scale(1); } }
+  #water { position: relative; width: 17px; height: 17px; border-radius: 0 55% 55% 55%; transform: rotate(45deg); background: #d5d9ea; overflow: hidden; margin: 0 2px; }
+  #waterfill { position: absolute; left: -50%; bottom: -50%; width: 200%; height: 0; background: #35aefc; transform: rotate(-45deg); transform-origin: 50% 100%; }
+  #waterwrap { position: relative; width: 19px; height: 24px; overflow: hidden; }
+  #waterwrap svg { position: absolute; inset: 0; }
+  #bloomwrap svg { width: 24px; height: 24px; transform: rotate(-90deg); }
+  #bloomring { transition: stroke-dashoffset .5s; }
+  #mute { position: fixed; right: 18px; top: 18px; width: 40px; padding: 0; justify-content: center; cursor: pointer; border: 0; font: inherit; transition: opacity .8s; }
+  #mute.off svg .w { display: none; }
+
+  #hints { position: fixed; left: 0; right: 0; bottom: 26px; display: flex; gap: 26px; justify-content: center; transition: opacity .8s; pointer-events: none; }
+  .hint { display: flex; align-items: center; gap: 5px; opacity: 0; transform: translateY(12px); transition: opacity .6s, transform .6s; }
+  .hint.on { opacity: 1; transform: none; }
+  .hint img { width: 30px; height: 30px; margin-left: 4px; filter: drop-shadow(0 3px 6px rgba(16, 24, 80, .35)); }
+  kbd { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 34px; padding: 0 9px; box-sizing: border-box; border-radius: 9px; background: rgba(255, 255, 255, .92);
+    color: var(--ink); font: inherit; font-weight: 800; font-size: 14px; box-shadow: 0 3px 0 #b9c3e6, 0 7px 16px rgba(16, 24, 80, .25); }
+  kbd.wide { min-width: 110px; letter-spacing: .12em; }
+
+  .ind { position: fixed; left: 0; top: 0; width: 50px; height: 50px; margin: -25px; border-radius: 50%; background: rgba(255, 255, 255, .94); box-shadow: 0 6px 18px rgba(16, 24, 80, .3);
+    opacity: 0; transition: opacity .35s; pointer-events: none; }
+  .ind.on { opacity: 1; }
+  .ind img { position: absolute; left: 7px; top: 9px; width: 36px; height: 36px; }
+  .ind b { position: absolute; left: 50%; top: 50%; width: 0; height: 0; margin: -6px -8px; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 12px solid #fff; }
+  .label { position: fixed; left: 0; top: 0; padding: 5px 13px; border-radius: 999px; background: #fff; color: var(--ink); font-weight: 800; font-size: 15px; white-space: nowrap;
+    box-shadow: 0 6px 18px rgba(16, 24, 80, .25); pointer-events: none; }
+
+  #end { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; transition: opacity 2s;
+    background: radial-gradient(ellipse at center, rgba(12, 16, 50, .0) 0%, rgba(12, 16, 50, .55) 100%); pointer-events: none; }
+  #end h2 { margin: 0; font-size: clamp(48px, 9vw, 120px); font-weight: 900; letter-spacing: .05em; text-shadow: 0 .04em 0 #cfdcff, 0 .12em .25em rgba(16, 24, 80, .6); }
+  #end div { font-size: 22px; font-weight: 800; letter-spacing: .2em; text-shadow: 0 2px 12px rgba(10, 16, 60, .8); font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="hud" class="hide">
+  <div class="pill" id="hearts"></div>
+  <div class="pill">
+    <div id="water"><div id="waterfill"></div></div>
+    <span id="bloomwrap" style="display:flex;align-items:center;gap:6px;margin-left:6px">
+      <svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.9" fill="none" stroke="#d5d9ea" stroke-width="5"/><circle id="bloomring" cx="18" cy="18" r="15.9" fill="none" stroke="#4fc46a" stroke-width="5" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/></svg>
+      <span id="bloomnum">0</span>
+    </span>
+  </div>
+</div>
+<button id="mute" class="pill" aria-label="sound">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2a2f55" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="#2a2f55"/><path class="w" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+</button>
+<div id="hints" class="hide"></div>
+<div id="inds"></div>
+<div id="labels"></div>
+
+<div id="title">
+  <h1><span style="--i:0">M</span><span style="--i:1">I</span><span style="--i:2">Z</span><span style="--i:3">Z</span><span style="--i:4">L</span><span style="--i:5">E</span></h1>
+  <p>PRESS ANY KEY</p>
+</div>
+<div id="end" class="hide"><h2>MIZZLE</h2><div id="endstats"></div></div>
+
+<script src="dist/game.js"></script>
+</body>
+</html>

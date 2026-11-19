@@ -1,0 +1,11 @@
+{
+  "name": "mizzle",
+  "private": true,
+  "scripts": {
+    "build": "bun build src/main.js --outfile=dist/game.js --format=iife",
+    "dev": "bun build src/main.js --outfile=dist/game.js --format=iife --watch"
+  },
+  "dependencies": {
+    "three": "^0.187.0"
+  }
+}
